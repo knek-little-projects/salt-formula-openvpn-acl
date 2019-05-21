@@ -1,0 +1,46 @@
+acl:
+  ldap:
+    uri: ldaps://ldap.jumpcloud.com:636
+    who: uid=USERNAME,ou=Users,o=HASH,dc=jumpcloud,dc=com
+    cred: PASSWORD
+    base: ou=Users,o=HASH,dc=jumpcloud,dc=com
+  ccd:
+    group: LDAP
+    path: /etc/openvpn/ccd
+    min: 10.55.2.10
+    max: 10.55.2.250
+    owner: root:openvpn
+  iptables:
+    cmd-save: sudo iptables-save
+    cmd-restore: sudo iptables-restore
+    file: /etc/test.rules.v4
+    nat:
+      sources:
+        - 127.0.0.1
+      destinations:
+        - 10.0.0.0/9
+        - 192.168.2.0/24
+    acl:
+      forward_all:
+        - 127.0.0.1/24
+        - 10.0.0.0/31
+
+      iptables.forward_everything:
+        - 10.0.0.0/9
+        - 192.168.2.0/24
+
+    template: |
+      *filter
+      :INPUT ACCEPT [0:0]
+      :FORWARD ACCEPT [0:0]
+      :OUTPUT ACCEPT [0:0]
+      %(forwarding)s
+      -A FORWARD -j REJECT --reject-with icmp-port-unreachable
+      COMMIT
+      *nat
+      :PREROUTING ACCEPT [0:0]
+      :INPUT ACCEPT [0:0]
+      :POSTROUTING ACCEPT [0:0]
+      :OUTPUT ACCEPT [0:0]
+      %(nat)s
+      COMMIT
