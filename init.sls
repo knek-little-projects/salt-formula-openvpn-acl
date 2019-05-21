@@ -1,3 +1,5 @@
+{% set config = salt.pillar.get('acl', {}) %}
+
 requirements:
   pkg.installed:
     - pkgs:
@@ -19,7 +21,7 @@ requirements:
 /root/acl/config.yaml:
   file.managed:
     - contents: |
-        {{ salt.pillar.get('acl', {}) | yaml(False) | indent(8) }}
+        {{ config | yaml(False) | indent(8) }}
     - require:
       - file: /root/acl
 
